@@ -9,4 +9,5 @@ dependencies = [
     "django-allauth[headless]>=65.14.1",
     "djangorestframework>=3.16.1",
     "psycopg[binary]>=3.3.2",
+    "pytest-django>=4.11.1",
 ]
