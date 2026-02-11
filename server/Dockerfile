@@ -54,6 +54,6 @@ USER nonroot
 # Use `/app` as the working directory
 WORKDIR /app
 
-EXPOSE 8000
+EXPOSE 8000 
 
 CMD ["./entrypoint.dev.sh"]
