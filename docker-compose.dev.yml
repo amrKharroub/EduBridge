@@ -5,12 +5,8 @@ services:
       args:
         - UV_NO_DEV=0
     container_name: django_app
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=strongPassword
-      - DB_HOST=db
-      - PORT=5432
+    env_file:
+      - ./server/.env
     ports:
       - "8000:8000"
     depends_on:
