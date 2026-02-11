@@ -1,0 +1,2 @@
+{% load i18n %}
+Confirm your account at {{ current_site.name }}

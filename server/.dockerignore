@@ -1,0 +1,43 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+# Python bytecode
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+
+# uv specific
+.uv/
+
+*.sqlite3
+
+# Collected static files and user-uploaded media
+static/
+staticfiles/
+media/
+
+# Django logs
+*.log
+
+.git/
+.gitignore
+.gitattributes
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+
+
+.dockerignore
+.github/
+.gitlab-ci.yml
