@@ -56,4 +56,4 @@ WORKDIR /app
 
 EXPOSE 8000
 
-CMD ["/app/entrypoint.dev.sh"]
+CMD ["./entrypoint.dev.sh"]

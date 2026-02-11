@@ -1,5 +1,6 @@
 from django import forms
 from accounts.models import UserProfile
+from django.db import transaction
 
 class CustomSignupForm(forms.Form):
     first_name = forms.CharField(
@@ -17,10 +18,8 @@ class CustomSignupForm(forms.Form):
 
     def signup(self, request, user):
         "this function runs after the user is created but before it is saved to the db"
-        user.first_name = self.cleaned_data["first_name"]
-        user.last_name = self.cleaned_data["last_name"]
-        user.save()
-
-        profile = UserProfile(user=user)
-        profile.dob = self.cleaned_data.get('dob')
-        profile.save()
+        with transaction.atomic():
+            UserProfile.objects.create(
+                user=user,
+                dob=self.cleaned_data.get('dob')
+            )
