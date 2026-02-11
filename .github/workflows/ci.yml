@@ -14,6 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Prepare environment
+        run: cp ./server/.env.ci .env
+
       - name: Build and Run Tests
         run: |
           docker compose -f docker-compose.dev.yml up --build --exit-code-from web
