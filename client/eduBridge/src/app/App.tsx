@@ -7,6 +7,7 @@ import ResetPassword from '../features/auth/pages/ResetPassword';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import MyFiles from '../features/drive/pages/MyFiles';
 import SharedWithMe from '../features/drive/pages/SharedWithMe';
+import Community from '../features/drive/pages/Community';
 
 function App() {
   return (
@@ -40,6 +41,14 @@ function App() {
             element={
               <DashboardLayout>
                 <SharedWithMe />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/drive/community"
+            element={
+              <DashboardLayout>
+                <Community />
               </DashboardLayout>
             }
           />
