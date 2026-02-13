@@ -9,6 +9,7 @@ import MyFiles from '../features/drive/pages/MyFiles';
 import SharedWithMe from '../features/drive/pages/SharedWithMe';
 import Community from '../features/drive/pages/Community';
 import Settings from '../features/drive/pages/Settings';
+import Chat from '../features/chat/pages/Chat';
 
 function App() {
   return (
@@ -50,6 +51,14 @@ function App() {
             element={
               <DashboardLayout>
                 <Community />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/drive/chat"
+            element={
+              <DashboardLayout>
+                <Chat />
               </DashboardLayout>
             }
           />
