@@ -4,6 +4,8 @@ import Login from '../features/auth/pages/Login';
 import Signup from '../features/auth/pages/Signup';
 import EmailVerification from '../features/auth/pages/EmailVerification';
 import ResetPassword from '../features/auth/pages/ResetPassword';
+import DashboardLayout from '../components/layout/DashboardLayout';
+import MyFiles from '../features/drive/pages/MyFiles';
 
 function App() {
   return (
@@ -15,6 +17,23 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/account/verify-email/:key" element={<EmailVerification />} />
           <Route path="/account/reset-password" element={<ResetPassword />} />
+
+          <Route
+            path="/drive"
+            element={
+              <DashboardLayout>
+                <Navigate to="/drive/my-files" replace />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/drive/my-files"
+            element={
+              <DashboardLayout>
+                <MyFiles />
+              </DashboardLayout>
+            }
+          />
         </Routes>
       </PageTitleProvider>
     </BrowserRouter>
