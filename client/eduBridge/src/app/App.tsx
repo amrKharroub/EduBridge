@@ -8,6 +8,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import MyFiles from '../features/drive/pages/MyFiles';
 import SharedWithMe from '../features/drive/pages/SharedWithMe';
 import Community from '../features/drive/pages/Community';
+import Settings from '../features/drive/pages/Settings';
 
 function App() {
   return (
@@ -49,6 +50,14 @@ function App() {
             element={
               <DashboardLayout>
                 <Community />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/drive/settings"
+            element={
+              <DashboardLayout>
+                <Settings />
               </DashboardLayout>
             }
           />
