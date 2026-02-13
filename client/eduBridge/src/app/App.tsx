@@ -6,6 +6,7 @@ import EmailVerification from '../features/auth/pages/EmailVerification';
 import ResetPassword from '../features/auth/pages/ResetPassword';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import MyFiles from '../features/drive/pages/MyFiles';
+import SharedWithMe from '../features/drive/pages/SharedWithMe';
 
 function App() {
   return (
@@ -31,6 +32,14 @@ function App() {
             element={
               <DashboardLayout>
                 <MyFiles />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/drive/shared"
+            element={
+              <DashboardLayout>
+                <SharedWithMe />
               </DashboardLayout>
             }
           />
