@@ -122,13 +122,11 @@ Each document maintains granular access control rules.
 
 Below is the core schema powering eduBridge.
 
-![](D:\Dev\projects\personal\lastEduBridge\readme\entity_relationship_diagram_eduBridge.png)
+![](./readme/entity_relationship_diagram_eduBridge.png)
 
 # Agents Workflow
 
 eduBridge uses LangGraph-based multi-step agents.
-
-<!-- Agent Workflow Graph Image -->
 
 ## Document Processing Flow
 
@@ -158,7 +156,7 @@ eduBridge uses LangGraph-based multi-step agents.
 
 5. Message persisted in database
 
-![](D:\Dev\projects\personal\lastEduBridge\readme\chatbot_graph.png)
+![](./readme/chatbot_graph.png)
 
 ## Test Generation Flow
 
@@ -170,7 +168,7 @@ eduBridge uses LangGraph-based multi-step agents.
 
 4. Store and render dynamically in frontend
 
-![](D:\Dev\projects\personal\lastEduBridge\readme\quiz_agent_graph.png)
+![](./readme/quiz_agent_graph.png)
 
 # Pages Overview
 
@@ -186,9 +184,9 @@ Users can:
 
 - Delete documents
   
-  | <img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/myfiles.png" title="" alt="" width="385"> | <img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/create_folder.png" title="" alt="" width="392"> |
+  | <img src="file:///./readme/myfiles.png" title="" alt="" width="385"> | <img src="file:///./readme/create_folder.png" title="" alt="" width="392"> |
   | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-  | ![](D:\Dev\projects\personal\lastEduBridge\readme\share_node.png)                                         | ![](D:\Dev\projects\personal\lastEduBridge\readme\upload_file.png)                                              |
+  | ![](./readme/share_node.png)                                         | ![](./readme/upload_file.png)                                              |
 
 ---
 
@@ -202,7 +200,7 @@ Users can:
 
 - Generate tests
 
-<img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/shared_with_me.png" title="" alt="" width="594">
+<img src="file:///./readme/shared_with_me.png" title="" alt="" width="594">
 
 ---
 
@@ -216,7 +214,7 @@ Users can:
 
 - Interact with public educational material
 
-<img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/Community.png" title="" alt="" width="587">
+<img src="file:///./readme/Community.png" title="" alt="" width="587">
 
 ---
 
@@ -230,7 +228,7 @@ Users can:
 
 <img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/rag_chat.png" title="" alt="" width="488">
 
-| ![](D:\Dev\projects\personal\lastEduBridge\readme\quiz_chat1.png) | ![](D:\Dev\projects\personal\lastEduBridge\readme\quiz_chat2.png) |
+| ![](./readme/quiz_chat1.png) | ![](./readme/quiz_chat2.png) |
 | ----------------------------------------------------------------- | ----------------------------------------------------------------- |
 
 ---
@@ -245,7 +243,7 @@ Users can:
 
 - See usage
 
-<img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/settings.png" title="" alt="" width="571">
+<img src="file:///./readme/settings.png" title="" alt="" width="571">
 
 ---
 
