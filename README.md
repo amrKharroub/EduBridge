@@ -158,6 +158,8 @@ eduBridge uses LangGraph-based multi-step agents.
 
 5. Message persisted in database
 
+![](D:\Dev\projects\personal\lastEduBridge\readme\chatbot_graph.png)
+
 ## Test Generation Flow
 
 1. Retrieve document context
@@ -167,6 +169,8 @@ eduBridge uses LangGraph-based multi-step agents.
 3. Generate structured test JSON
 
 4. Store and render dynamically in frontend
+
+![](D:\Dev\projects\personal\lastEduBridge\readme\quiz_agent_graph.png)
 
 # Pages Overview
 
