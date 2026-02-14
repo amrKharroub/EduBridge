@@ -184,7 +184,7 @@ Users can:
 
 - Delete documents
   
-  | <img src="file:///./readme/myfiles.png" title="" alt="" width="385"> | <img src="file:///./readme/create_folder.png" title="" alt="" width="392"> |
+  | ![](./readme/myfiles.png) | ![](./readme/create_folder.png) |
   | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
   | ![](./readme/share_node.png)                                         | ![](./readme/upload_file.png)                                              |
 
@@ -200,7 +200,7 @@ Users can:
 
 - Generate tests
 
-<img src="file:///./readme/shared_with_me.png" title="" alt="" width="594">
+![](./readme/shared_with_me.png)
 
 ---
 
@@ -214,7 +214,7 @@ Users can:
 
 - Interact with public educational material
 
-<img src="file:///./readme/Community.png" title="" alt="" width="587">
+![](./readme/Community.png)
 
 ---
 
@@ -226,7 +226,7 @@ Users can:
 
 - Grounded answers using RAG
 
-<img src="file:///D:/Dev/projects/personal/lastEduBridge/readme/rag_chat.png" title="" alt="" width="488">
+![](./readme/rag_chat.png)
 
 | ![](./readme/quiz_chat1.png) | ![](./readme/quiz_chat2.png) |
 | ----------------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -243,7 +243,7 @@ Users can:
 
 - See usage
 
-<img src="file:///./readme/settings.png" title="" alt="" width="571">
+![](./readme/settings.png)
 
 ---
 
