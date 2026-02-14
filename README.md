@@ -220,7 +220,7 @@ Users can:
 
 ---
 
-## ? Chat Page
+## Chat Page
 
 - Persistent chat sessions
 
