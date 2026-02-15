@@ -1,6 +1,11 @@
 import pytest
 from drive.models import Node
 from django.contrib.auth.models import User
+from rest_framework.test import APIClient
+
+@pytest.fixture
+def api_client():
+    return APIClient()
 
 @pytest.fixture
 def user():

@@ -41,7 +41,7 @@ def test_node_details_visible_only_to_users_with_permission(root_folder):
 
     client = APIClient()
     client.force_authenticate(user=stranger)
-    url = reverse("details-node", args=[node.id])
+    url = reverse("node-detail", args=[node.id])
     response = client.get(url)
 
     # Should be hidden
@@ -69,12 +69,12 @@ def test_viewer_can_see_node_but_not_shared_with(root_folder):
         status=Node.NodeStatus.ACTIVE
     )
 
-    assign_perm("view_node", viewer, node)
+    assign_perm("drive.view_node", viewer, node)
 
     client = APIClient()
     client.force_authenticate(user=viewer)
 
-    url = reverse("details-node", args=[node.id])
+    url = reverse("node-detail", args=[node.id])
     response = client.get(url)
 
     assert response.status_code == 403
@@ -137,13 +137,13 @@ def test_editor_can_see_shared_with(root_folder):
 
     node.save()
 
-    assign_perm("fileSharing.edit_node", editor, node)
-    assign_perm("fileSharing.view_node", viewer, node)
+    assign_perm("drive.edit_node", editor, node)
+    assign_perm("drive.view_node", viewer, node)
 
     client = APIClient()
     client.force_authenticate(user=editor)
 
-    url = reverse("details-node", args=[node.id])
+    url = reverse("node-detail", args=[node.id])
     response = client.get(url)
 
     assert response.status_code == 200
@@ -174,7 +174,7 @@ def test_owner_can_access_node_without_guardian_permission(root_folder):
     client = APIClient()
     client.force_authenticate(user=owner)
 
-    url = reverse("details-node", args=[node.id])
+    url = reverse("node-detail", args=[node.id])
     response = client.get(url)
 
     assert response.status_code == 200

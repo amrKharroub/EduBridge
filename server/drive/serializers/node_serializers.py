@@ -3,6 +3,12 @@ from guardian.shortcuts import get_users_with_perms
 from django.contrib.auth.models import User
 from drive.models import Node
 
+
+class NodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Node
+        fields=["id", "owner", "name", "type"]
+
 class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
