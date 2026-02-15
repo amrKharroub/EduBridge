@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.core.exceptions import BadRequest
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-    
+from drive.core.services.node_manager import get_top_level_shared_nodes
 
 
 class NodeViewSet(viewsets.ModelViewSet):
@@ -55,6 +55,13 @@ class NodeViewSet(viewsets.ModelViewSet):
             serializer = NodeSerializer(qs, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = NodeSerializer(qs, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def shared(self, request):
+        """GET /nodes/shared/ name=node-shared"""
+        nodes = get_top_level_shared_nodes(request.user)
+        serializer = NodeSerializer(nodes, many=True)
         return Response(serializer.data)
 
 

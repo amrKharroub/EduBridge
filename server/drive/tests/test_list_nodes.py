@@ -1,50 +1,8 @@
-import random
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from django.contrib.auth import get_user_model
 from drive.models import Node
-
-User = get_user_model()
-
-
-@pytest.fixture
-def create_nodes():
-    def _create(user, root_folder, number):
-        statuses = [
-            Node.NodeStatus.ACTIVE,
-            Node.NodeStatus.UPLOADING,
-            Node.NodeStatus.TRASHED,
-        ]
-        types = [Node.NodeType.file, Node.NodeType.folder]
-
-        nodes = [
-            root_folder.add_child(
-                name="Project Docs first",
-                owner=user,
-                type=Node.NodeType.file,
-                status=Node.NodeStatus.ACTIVE,
-            )
-        ]
-
-        for i in range(number):
-            nodes.append(
-                root_folder.add_child(
-                    name=f"Project Docs{i}",
-                    owner=user,
-                    type=random.choice(types),
-                    status=random.choice(statuses),
-                )
-            )
-        return nodes
-
-    return _create
-
-
-# ----------------------------------------
-# Tests
-# ----------------------------------------
-
+from django.contrib.auth.models import User
 
 @pytest.mark.django_db
 def test_list_root_nodes(api_client, user, create_nodes):
