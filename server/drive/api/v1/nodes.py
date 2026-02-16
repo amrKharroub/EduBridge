@@ -1,16 +1,16 @@
 from rest_framework.generics import RetrieveAPIView
-from drive.serializers.node_serializers import NodeDetailsSerializer, NodeSerializer
 from rest_framework.permissions import IsAuthenticated
 from allauth.headless.contrib.rest_framework.authentication import XSessionTokenAuthentication
 from django.shortcuts import get_object_or_404
 from drive.models import Node
+from drive.serializers.node_serializers import NodeDetailsSerializer, NodeSerializer, NodeShareSerializer
 from drive.utils.permissions import IsEditor, IsViewer
 from drive.utils.shortcuts import get_or_create_root_folder
+from drive.core.services.node_manager import get_top_level_shared_nodes, share_node_with_users
 from rest_framework.response import Response
 from django.core.exceptions import BadRequest
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from drive.core.services.node_manager import get_top_level_shared_nodes
 
 
 class NodeViewSet(viewsets.ModelViewSet):
@@ -22,9 +22,12 @@ class NodeViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, IsViewer]
         return [permission() for permission in permission_classes]
     
-    def get_object(self):
+    def get_object(self, use_select_related=True):
+        queryset = Node.active_objects
+        if use_select_related:
+            queryset = queryset.select_related("owner", "current_version")
         obj = get_object_or_404(
-            Node.active_objects.select_related("owner", "current_version"),
+            queryset,
             pk=self.kwargs["pk"]
         )
         self.check_object_permissions(self.request, obj)
@@ -63,6 +66,19 @@ class NodeViewSet(viewsets.ModelViewSet):
         nodes = get_top_level_shared_nodes(request.user)
         serializer = NodeSerializer(nodes, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsEditor])
+    def share(self, request, pk=None):
+        """POST /nodes/{id}/share/ name=node-share"""
+        serializer = NodeShareSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        node = self.get_object(False)
+        share_node_with_users(
+            node,
+            serializer.validated_data["emails"],
+            serializer.validated_data["access_level"]
+        )
+        return Response(status=201)
 
 
 # class NodeViewSet(viewsets.ModelViewSet):

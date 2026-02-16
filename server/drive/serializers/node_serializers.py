@@ -38,3 +38,21 @@ class NodeDetailsSerializer(serializers.ModelSerializer):
     def get_path(self, obj):
         ancestors = [item["name"] for item in list(obj.get_ancestors().values("name"))]
         return "/" + "/".join(ancestors[1:])
+    
+
+class NodeShareSerializer(serializers.Serializer):
+    access_levels = (
+        ("viewer", "Viewer"),
+        ("editor", "Editor"),
+    )
+    emails = serializers.ListField(
+        child=serializers.EmailField(),
+        allow_empty=False
+    )
+    access_level = serializers.ChoiceField(choices=access_levels)
+
+    def validate_shares(self, value):
+        emails = value['emails']
+        if len(emails) != len(set(emails)):
+            raise serializers.ValidationError("Duplicate Emails found in the share list")
+        return value

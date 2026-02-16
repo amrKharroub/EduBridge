@@ -1,4 +1,6 @@
-from guardian.shortcuts import get_objects_for_user
+from guardian.shortcuts import get_objects_for_user, get_users_with_perms, assign_perm
+from django.core.exceptions import BadRequest
+from django.contrib.auth.models import User
 from drive.models import Node
 
 def get_top_level_shared_nodes(user):
@@ -19,3 +21,17 @@ def get_top_level_shared_nodes(user):
         if not top_level or not node.path.startswith(top_level[-1].path):
             top_level.append(node)
     return top_level
+
+
+def share_node_with_users(node, emails, access_level):
+    users = User.objects.filter(email__in=emails)
+    if users.count() != len(emails):
+        raise BadRequest("not all emails are presint")
+    if access_level == "viewer":
+        have_perm_users = get_users_with_perms(node, only_with_perms_in=["view_node"])
+        users = users.exclude(id__in=have_perm_users.values_list("id", flat=True))
+        assign_perm("fileSharing.view_node", users, node)
+    elif access_level == "editor":
+        have_perm_users = get_users_with_perms(node, only_with_perms_in=["edit_node"])
+        users = users.difference(have_perm_users)
+        assign_perm("fileSharing.edit_node", users, node)
