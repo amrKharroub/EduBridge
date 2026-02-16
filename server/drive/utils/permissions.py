@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermission
 from guardian.shortcuts import get_objects_for_user
 from django.contrib.auth.models import User
 from drive.models import Node
+from django.db.models import Q
 
 class IsEditor(BasePermission):
     """
