@@ -2,6 +2,8 @@ from guardian.shortcuts import get_objects_for_user, get_users_with_perms, assig
 from django.core.exceptions import BadRequest
 from django.contrib.auth.models import User
 from drive.models import Node
+from django.shortcuts import get_object_or_404
+from drive.utils.shortcuts import get_or_create_root_folder
 
 def get_top_level_shared_nodes(user):
     """
@@ -35,3 +37,19 @@ def share_node_with_users(node, emails, access_level):
         have_perm_users = get_users_with_perms(node, only_with_perms_in=["edit_node"])
         users = users.difference(have_perm_users)
         assign_perm("fileSharing.edit_node", users, node)
+
+
+def create_folder_node(user: User, parent_id, folder_name) -> Node:
+    if parent_id:
+        parent_node = get_object_or_404(Node.active_objects, pk=parent_id)
+    else:
+        parent_node = get_or_create_root_folder(user)
+    if not parent_node.is_folder and parent_node.status == Node.NodeStatus.ACTIVE:
+        raise BadRequest("Invalid parent id")
+    new_folder = Node(
+        name=folder_name,
+        owner=user,
+        status=Node.NodeStatus.ACTIVE,
+        type=Node.NodeType.folder
+    )
+    return parent_node.add_child(instance=new_folder)

@@ -56,3 +56,9 @@ class NodeShareSerializer(serializers.Serializer):
         if len(emails) != len(set(emails)):
             raise serializers.ValidationError("Duplicate Emails found in the share list")
         return value
+    
+
+
+class CreateFolderNodeSerializer(serializers.Serializer):
+    parent_id = serializers.IntegerField(allow_null=True)
+    name = serializers.CharField(max_length=255)
