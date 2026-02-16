@@ -1,10 +1,25 @@
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from drive.models import Node
-from drive.serializers.node_serializers import NodeDetailsSerializer, NodeSerializer, NodeShareSerializer, CreateFolderNodeSerializer
+from drive.serializers.node_serializers import (
+    NodeDetailsSerializer,
+    NodeSerializer,
+    NodeShareSerializer,
+    CreateFolderNodeSerializer,
+    InitUploadSerializer,
+    FinalizeFileUploadSerializer
+)
 from drive.utils.permissions import IsEditor, IsViewer
 from drive.utils.shortcuts import get_or_create_root_folder
-from drive.core.services.node_manager import get_top_level_shared_nodes, share_node_with_users, create_folder_node
+from drive.core.services.node_manager import (
+    get_top_level_shared_nodes,
+    share_node_with_users,
+    create_folder_node,
+    download_node,
+    search_for_node,
+    init_upload_process,
+    finalize_upload_process
+)
 from rest_framework.response import Response
 from django.core.exceptions import BadRequest
 from rest_framework import viewsets, status
@@ -100,3 +115,30 @@ class SearchUserNode(APIView):
         query_text = request.GET.get("q", "")
         result = search_for_node(request.user, query_text)
         return Response(data=result, status=status.HTTP_200_OK)
+    
+
+class InitFileUpload(APIView):
+    def post(self, request):
+        serializer = InitUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        res = init_upload_process(
+            user=request.user,
+            parent_id=serializer.validated_data['parent_id'],
+            filename=serializer.validated_data['filename'],
+            size=serializer.validated_data['size'],
+            mime_type=serializer.validated_data['mime_type'],
+            checksum=serializer.validated_data['checksum']
+        )
+        return Response(data=res, status=200)
+    
+
+class FinalizeFileUpload(APIView):
+    def post(self, request, node_id):
+        serializer = FinalizeFileUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        res = finalize_upload_process(
+            user=request.user,
+            version_id=serializer.validated_data["version_id"],
+            node_id=node_id
+        )
+        return Response(data=res, status=201)

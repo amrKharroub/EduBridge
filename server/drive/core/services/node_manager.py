@@ -16,6 +16,9 @@ from rest_framework.exceptions import NotFound
 from drive.utils.permissions import can_edit, can_view
 from drive.core.services.azure_blob import generate_upload_sas, get_file_metadata, generate_download_sas
 import uuid
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from drive.utils.permissions import get_accessible_path_filter
+
 
 def build_storage_key(user_id, node_id):
     return f"u/{user_id}/n/{node_id}/{uuid.uuid4().hex}"
@@ -139,3 +142,98 @@ def get_files_info(node):
             (child.rel_storage_key, relative_name_path)
         )
     return file_info, size
+
+
+def search_for_node(user, query_text):
+    search_query = SearchQuery(query_text)
+    security_fence = get_accessible_path_filter(user)
+
+    results = Node.active_objects.filter(security_fence).annotate(
+        rank=SearchRank("search_vector", search_query)
+    ).filter(
+        search_vector=search_query
+    ).select_related("owner").order_by("-rank", "title")
+    return results
+
+
+def init_upload_process(*, user, parent_id, filename, size, mime_type, checksum):
+    if parent_id is None:
+        parent_node = get_or_create_root_folder(user)
+    else:
+        parent_node = get_object_or_404(Node.active_objects, pk=parent_id)
+    if not parent_node.is_folder:
+        raise BadRequest("Invalid parent id")
+    if not can_edit(user, parent_node):
+        raise PermissionDenied()
+    with transaction.atomic():
+        new_node = Node(
+            owner = user,
+            name = filename,
+            type = Node.NodeType.file,
+            status = Node.NodeStatus.UPLOADING,
+        )
+        parent_node.add_child(instance=new_node)
+
+        storage_key = build_storage_key(user.pk, new_node.pk)
+        node_version = NodeVersion.objects.create(
+            node = new_node,
+            storage_key = storage_key,
+            size = size,
+            mime_type = mime_type,
+            checksum = checksum
+        )
+
+    upload_url = generate_upload_sas(
+        blob_ref=storage_key,
+        content_type=mime_type
+    )
+
+    return {
+        "node_id": new_node.pk,
+        "version_id": node_version.pk,
+        "upload_url": upload_url
+    }
+
+
+def finalize_upload_process(*, user, version_id, node_id):
+    node = get_object_or_404(Node.active_objects, pk=node_id)
+    version = get_object_or_404(NodeVersion, pk=version_id)
+    if node.owner != user:
+        raise PermissionDenied()
+    if node.status != Node.NodeStatus.UPLOADING:
+        raise BadRequest
+    
+    meta = get_file_metadata(version.storage_key)
+    if not meta['status']:
+        with transaction.atomic():
+            node.status = Node.NodeStatus.DRAFT
+            node.save()
+            version.status = NodeVersion.FileStatus.FAILED
+            version.save()
+        raise NotFound("File Not Found in Storage")
+    if (
+        meta["size"] == 0
+        or meta["size"] != version.size
+        or meta["type"] != version.mime_type 
+        or (
+            meta["content_md5"] is not None 
+            and meta["content_md5"].hex() != version.checksum
+        )
+    ):
+        with transaction.atomic():
+            node.status = Node.NodeStatus.DRAFT
+            node.save()
+            version.status = NodeVersion.FileStatus.FAILED
+            version.save()
+        raise BadRequest("incomplete file upload")
+    with transaction.atomic():
+        version.status = NodeVersion.FileStatus.ACTIVE
+        version.save()
+        node.status = Node.NodeStatus.ACTIVE
+        node.current_version = version
+        node.save()
+        update_user_storage_usage(user, version.size)
+    return {
+        "filename": node.name,
+        "mime_type": version.mime_type
+    }

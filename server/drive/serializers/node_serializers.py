@@ -62,3 +62,16 @@ class NodeShareSerializer(serializers.Serializer):
 class CreateFolderNodeSerializer(serializers.Serializer):
     parent_id = serializers.IntegerField(allow_null=True)
     name = serializers.CharField(max_length=255)
+
+
+class InitUploadSerializer(serializers.Serializer):
+    parent_id = serializers.IntegerField(allow_null=True)
+    filename = serializers.CharField(max_length=255)
+    size = serializers.IntegerField()
+    mime_type = serializers.CharField(max_length=124)
+    checksum = serializers.CharField(max_length=64)
+
+
+
+class FinalizeFileUploadSerializer(serializers.Serializer):
+    version_id = serializers.IntegerField()

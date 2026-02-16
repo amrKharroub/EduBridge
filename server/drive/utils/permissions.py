@@ -75,3 +75,29 @@ def can_view(user: User, node: Node):
         klass=ancestors_qs
     )
     return permitted_nodes.exists()
+
+
+def get_accessible_path_filter(user):
+    """
+    Returns a Q object that filters for all paths a user can see.
+    Logic: User sees a file if they Own it OR have 'view_node' on it 
+    OR have 'view_node' on an ancestor.
+    """
+
+    if user.is_superuser:
+        return Q()
+    
+    permitted_nodes = get_objects_for_user(
+        user, ["view_node", "edit_node"], klass=Node, any_perm=True
+    ).values_list("path", flat=True)
+
+    permission_query = Q(owner=user) | Q(is_public=True)
+
+    if permitted_nodes:
+        path_q = Q()
+        for p in permitted_nodes:
+            path_q |= Q(path__startswith=p)
+
+        permission_query |= path_q
+
+    return permission_query
