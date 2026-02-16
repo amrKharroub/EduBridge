@@ -7,7 +7,8 @@ from drive.utils.shortcuts import get_or_create_root_folder
 from drive.core.services.node_manager import get_top_level_shared_nodes, share_node_with_users, create_folder_node
 from rest_framework.response import Response
 from django.core.exceptions import BadRequest
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 
 
@@ -88,3 +89,14 @@ class NodeViewSet(viewsets.ModelViewSet):
         serialized = NodeSerializer(folder)
         return Response(data=serialized.data, status=201)
 
+class DownloadNodeView(APIView):
+    def get(self, request, node_id):
+        result = download_node(request.user, node_id)
+        return Response(data=result, status=status.HTTP_202_ACCEPTED)
+    
+
+class SearchUserNode(APIView):
+    def get(self, request):
+        query_text = request.GET.get("q", "")
+        result = search_for_node(request.user, query_text)
+        return Response(data=result, status=status.HTTP_200_OK)

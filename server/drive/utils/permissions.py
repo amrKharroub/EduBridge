@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 from guardian.shortcuts import get_objects_for_user
+from django.contrib.auth.models import User
+from drive.models import Node
 
 class IsEditor(BasePermission):
     """
@@ -42,3 +44,34 @@ class IsViewer(BasePermission):
             "drive.view_node", 
             klass=ancestors_qs
         ).exists()
+    
+
+def can_edit(user: User, node: Node):
+    if node.owner == user:
+        return True
+    
+    if user.has_perm("fileSharing.edit_node", node):
+        return True
+    
+    ancestors_qs = node.get_ancestors()
+    permitted_nodes = get_objects_for_user(
+        user, 
+        "fileSharing.edit_node", 
+        klass=ancestors_qs
+    )
+    return permitted_nodes.exists()
+
+def can_view(user: User, node: Node):
+    if node.owner == user:
+        return True
+    
+    if user.has_perm("fileSharing.view_node", node):
+        return True
+    
+    ancestors_qs = node.get_ancestors()
+    permitted_nodes = get_objects_for_user(
+        user, 
+        "fileSharing.view_node", 
+        klass=ancestors_qs
+    )
+    return permitted_nodes.exists()

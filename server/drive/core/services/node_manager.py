@@ -4,6 +4,21 @@ from django.contrib.auth.models import User
 from drive.models import Node
 from django.shortcuts import get_object_or_404
 from drive.utils.shortcuts import get_or_create_root_folder
+from drive.core.services.redis_cache import redis_client, TASK_OWNER_KEY
+from django.db import transaction
+from django.db.models import F
+from drive.utils.shortcuts import get_or_create_root_folder, update_user_storage_usage
+from drive.core.tasks import generate_and_upload_zip_task
+from drive.models import Node, NodeVersion, ZipFolder
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import BadRequest, PermissionDenied
+from rest_framework.exceptions import NotFound
+from drive.utils.permissions import can_edit, can_view
+from drive.core.services.azure_blob import generate_upload_sas, get_file_metadata, generate_download_sas
+import uuid
+
+def build_storage_key(user_id, node_id):
+    return f"u/{user_id}/n/{node_id}/{uuid.uuid4().hex}"
 
 def get_top_level_shared_nodes(user):
     """
@@ -53,3 +68,74 @@ def create_folder_node(user: User, parent_id, folder_name) -> Node:
         type=Node.NodeType.folder
     )
     return parent_node.add_child(instance=new_folder)
+
+
+
+def download_node(user, node_id):
+    node = get_object_or_404(Node.active_objects.select_related("current_version"), pk=node_id)
+    if not node.is_public and not can_view(user, node) and not can_edit(user, node):
+        raise PermissionDenied()
+    if node.is_folder:
+        files_info, size = get_files_info(node)
+        storage_key = build_storage_key(user.id, node.id) + "/" + node.name + ".zip"
+        zipfolder = ZipFolder.objects.create(
+            node=node,
+            storage_key=storage_key,
+            size=size
+        )
+        task = generate_and_upload_zip_task.delay(zipfolder.id, storage_key, node.name, files_info)
+        redis_client.hset(TASK_OWNER_KEY, task.id, user.id)
+        return {
+            "status": "Zipping files",
+            "task_id": task.id
+        }
+    else:
+        download_sas_url = generate_download_sas(blob_ref=node.current_version.storage_key)
+        return {
+            "status": "done",
+            "filename": node.name,
+            "download_url": download_sas_url
+        }
+    
+
+def get_files_info(node):
+    children = node.get_descendants().filter(
+        deleted_at__isnull = True,
+        status = Node.NodeStatus.ACTIVE
+    ).annotate(
+        rel_storage_key=F("current_version__storage_key"),
+        rel_size=F("current_version__size")
+    ).only("id", "name", "path", "type")
+
+    path_to_name = {
+        child.path: child.name for child in children
+    }
+
+    path_to_name[node.path] = node.name
+
+    steplen = node.steplen
+    root_depth = node.depth
+
+    file_info = []
+    size = 0
+    for child in children:
+        if child.is_folder:
+            continue
+        size += child.rel_size
+        chunks = [
+            child.path[i:i + steplen]
+            for i in range(root_depth * steplen, len(child.path), steplen)
+        ]
+
+        current = node.path
+        parts = []
+        for chunk in chunks:
+            current += chunk
+            parts.append(path_to_name[current])
+
+        relative_name_path = "/".join(parts)
+
+        file_info.append(
+            (child.rel_storage_key, relative_name_path)
+        )
+    return file_info, size
