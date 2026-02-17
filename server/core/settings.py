@@ -39,12 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'rest_framework',
     'allauth',
     'allauth.account',
     'allauth.headless',
     'guardian',
     'accounts',
+    'treebeard',
+    'drive',
 ]
 
 MIDDLEWARE = [
@@ -156,3 +159,39 @@ ACCOUNT_EMAIL_VERIFICATION = "optional"
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend" 
 
 ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'allauth.headless.contrib.rest_framework.authentication.XSessionTokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
+}
+
+############### CELERY SETTINGS ################################
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TASK_STORE_EAGER_RESULT = True
+
+CELERY_TASK_ROUTES = {
+    "vectorise.tasks.*": {"queue": "django"},
+}
+
+#################### CACHE SETTINGS ############################
+
+REDIS = {
+    "HOST": "127.0.0.1",
+    "PORT": 6379,
+    "DB": 2,
+    "PASSWORD": None,
+    "SOCKET_TIMEOUT": 5,
+    "DECODE_RESPONSES": True,
+}
