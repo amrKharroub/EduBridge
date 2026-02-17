@@ -7,9 +7,10 @@ from drive.serializers.node_serializers import (
     NodeShareSerializer,
     CreateFolderNodeSerializer,
     InitUploadSerializer,
-    FinalizeFileUploadSerializer
+    FinalizeFileUploadSerializer,
+    UpdateNodeSerializer
 )
-from drive.utils.permissions import IsEditor, IsViewer
+from drive.utils.permissions import IsEditor, IsViewer, can_edit
 from drive.utils.shortcuts import get_or_create_root_folder
 from drive.core.services.node_manager import (
     get_top_level_shared_nodes,
@@ -25,6 +26,10 @@ from django.core.exceptions import BadRequest
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.decorators import action
+from rest_framework.generics import UpdateAPIView
+from django.core.exceptions import PermissionDenied
+from celery.result import AsyncResult
+from drive.core.services.redis_cache import redis_client, TASK_OWNER_KEY
 
 
 class NodeViewSet(viewsets.ModelViewSet):
@@ -142,3 +147,49 @@ class FinalizeFileUpload(APIView):
             node_id=node_id
         )
         return Response(data=res, status=201)
+    
+
+class UpdateNode(UpdateAPIView):
+    serializer_class = UpdateNodeSerializer
+    queryset = Node.active_objects.all()
+
+    def get_object(self):
+        node = super().get_object()
+        if not can_edit(self.request.user, node):
+            raise PermissionDenied()
+        return node
+    
+
+class TaskResultView(APIView):
+    def get(self, request, task_id):
+        user_id = request.user.id
+        owner = redis_client.hget(TASK_OWNER_KEY, task_id)
+        
+        if owner is None:
+            return Response(status=404)
+        
+        if str(owner.decode() if isinstance(owner, bytes) else owner) != str(user_id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+            
+        async_res = AsyncResult(task_id)
+        
+        data = {
+            "task_id": task_id,
+            "status": async_res.status,
+            "ready": async_res.ready(),
+            "successful": async_res.successful(),
+            "result": None,
+            "traceback": None
+        }
+
+        if async_res.ready():
+            if async_res.successful():
+                data["result"] = async_res.result
+            elif async_res.failed():
+                data["result"] = str(async_res.result)
+
+        if async_res.failed():
+            tb = getattr(async_res, "traceback", None)
+            data["traceback"] = tb
+
+        return Response(data=data)

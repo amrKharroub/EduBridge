@@ -14,3 +14,10 @@ def get_or_create_root_folder(user:User) -> Node:
         )
         StorageUsage.objects.get_or_create(user=user)
     return root
+
+
+def update_user_storage_usage(user:User, size:int):
+    usage, _ = StorageUsage.objects.get_or_create(user=user)
+    usage.used_bytes += size
+    usage.save()
+    return

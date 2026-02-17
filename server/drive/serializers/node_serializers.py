@@ -75,3 +75,9 @@ class InitUploadSerializer(serializers.Serializer):
 
 class FinalizeFileUploadSerializer(serializers.Serializer):
     version_id = serializers.IntegerField()
+
+
+class UpdateNodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Node
+        fields = ["name", "is_public"]
