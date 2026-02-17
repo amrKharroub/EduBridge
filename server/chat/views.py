@@ -25,7 +25,6 @@ class ChatListCreateView(generics.ListCreateAPIView):
         return Chat.objects.filter(user=self.request.user).order_by('-updated_at')
 
     def perform_create(self, serializer):
-        # Generate a unique thread_id (e.g., uuid)
         import uuid
         thread_id = str(uuid.uuid4())
         serializer.save(user=self.request.user, thread_id=thread_id)
@@ -43,12 +42,9 @@ class ChatRetrieveDestroyView(generics.RetrieveDestroyAPIView):
 
     def perform_destroy(self, instance):
         thread_id = instance.thread_id
-        # Delete checkpoints from PostgresSaver tables
         conn = psycopg.connect(DB_URI, autocommit=True)
         with conn.cursor() as cur:
-            # LangGraph tables: checkpoints, checkpoint_blobs, checkpoint_writes
             cur.execute("DELETE FROM checkpoints WHERE thread_id = %s", (thread_id,))
-            # (checkpoint_blobs and checkpoint_writes are cascade-deleted if foreign keys exist)
         conn.close()
         instance.delete()
 
@@ -64,17 +60,13 @@ class ChatMessagesView(APIView):
 
     def get(self, request, thread_id):
         chat = self.get_chat(request.user, thread_id)
-        # Retrieve messages from checkpointer
         checkpointer = get_checkpointer()
-        # Get the latest checkpoint for the thread
         config = {"configurable": {"thread_id": thread_id}}
         checkpoints = list(checkpointer.list(config))
         if not checkpoints:
             return Response({"messages": []})
-        # The latest checkpoint contains the state
-        checkpoint_tuple = checkpoints[-1]  # (checkpoint, metadata)
-        state = checkpoint_tuple[0]  # checkpoint contains state snapshot
-        # state["messages"] is a list of BaseMessage objects
+        checkpoint_tuple = checkpoints[-1]
+        state = checkpoint_tuple[0]  
         messages = []
         for msg in state["messages"]:
             if isinstance(msg, HumanMessage):
@@ -82,11 +74,11 @@ class ChatMessagesView(APIView):
             elif isinstance(msg, AIMessage):
                 role = "assistant"
             else:
-                continue  # skip system or other
+                continue 
             messages.append({
                 "role": role,
                 "content": msg.content,
-                "timestamp": msg.additional_kwargs.get("timestamp")  # if you store timestamp
+                "timestamp": msg.additional_kwargs.get("timestamp")
             })
         return Response(messages)
 
@@ -96,20 +88,16 @@ class ChatMessagesView(APIView):
         serializer.is_valid(raise_exception=True)
         user_message = serializer.validated_data['message']
 
-        # Build graph with checkpointer
         checkpointer = get_checkpointer()
         graph = create_graph(checkpointer)
         config = {"configurable": {"thread_id": thread_id}}
 
-        # Prepare input: HumanMessage
         input_message = HumanMessage(content=user_message)
 
-        # Stream the graph execution and capture final state
         final_state = None
         for chunk in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
             final_state = chunk
 
-        # Extract assistant's last message
         if final_state and "messages" in final_state:
             last_message = final_state["messages"][-1]
             if isinstance(last_message, AIMessage):
@@ -119,7 +107,21 @@ class ChatMessagesView(APIView):
         else:
             response_content = "No response."
 
-        # Optionally update chat's updated_at timestamp
         chat.save(update_fields=['updated_at'])
 
         return Response({"response": response_content}, status=status.HTTP_200_OK)
+
+
+
+class ChatListCreateView(generics.ListCreateAPIView):
+    serializer_class = ChatSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Chat.objects.filter(user=self.request.user).order_by('-updated_at')
+
+    def perform_create(self, serializer):
+        agent_type = self.request.data.get('agent_type', 'rag')
+        import uuid
+        thread_id = str(uuid.uuid4())
+        serializer.save(user=self.request.user, thread_id=thread_id, agent_type=agent_type)

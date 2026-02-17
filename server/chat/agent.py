@@ -178,3 +178,21 @@ def get_checkpointer():
     checkpointer = PostgresSaver(conn)
     checkpointer.setup()  # ensures tables exist
     return checkpointer
+
+from chat.quiz_agent import create_quiz_graph
+
+_rag_graph = None
+_quiz_graph = None
+
+def get_graph(agent_type: str, checkpointer=None):
+    global _rag_graph, _quiz_graph
+    if agent_type == 'rag':
+        if _rag_graph is None:
+            _rag_graph = create_rag_graph(checkpointer)
+        return _rag_graph
+    elif agent_type == 'quiz':
+        if _quiz_graph is None:
+            _quiz_graph = create_quiz_graph(checkpointer)
+        return _quiz_graph
+    else:
+        raise ValueError(f"Unknown agent type: {agent_type}")
