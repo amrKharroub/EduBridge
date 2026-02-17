@@ -195,3 +195,28 @@ REDIS = {
     "SOCKET_TIMEOUT": 5,
     "DECODE_RESPONSES": True,
 }
+
+############################ Qdrant Settings ##########################
+QDRANT_CONNECTION="http://127.0.0.1:6333"
+
+QDRANT_MODEL_NAME="BAAI/bge-small-en"
+QDRANT_COLLECTION_NAME="dev_collection"
+
+########################### Parse settings #############################
+LLAMA_CLOUD_KEY=os.getenv('LLAMACLOUD_KEY')
+PARSE_SETTINGS={
+    "source_url": "",
+    "upload_file": "",
+    "tier": "agentic",
+    "version": "latest",
+    "output_options": {
+        "markdown": {
+            "annotate_links": True,
+            "tables": {
+                "compact_markdown_tables": True,
+                "output_tables_as_markdown": True,
+            }
+        },
+    },
+    "expand":["markdown", "items"]
+}
