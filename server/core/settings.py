@@ -220,3 +220,7 @@ PARSE_SETTINGS={
     },
     "expand":["markdown", "items"]
 }
+
+###################################### chat settings ###################################
+LANGGRAPH_DB_URI = os.getenv('LANGGRAPH_DB_URI', 'postgresql://postgres:pg-root@localhost:5432/langgraph-db?sslmode=disable')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
